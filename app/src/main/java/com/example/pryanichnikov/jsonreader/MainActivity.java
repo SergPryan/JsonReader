@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
@@ -21,26 +22,23 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+
 import java.net.URL;
-import java.sql.Date;
-import java.util.ArrayList;
+
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ProgressBar progressBar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        progressBar = (ProgressBar) findViewById(R.id.progress_start_application);
-        progressBar.setMax(10);
+        setContentView(R.layout.list_view);
+
         Task task = new Task();
-        task.execute();
+        task.execute("http://www.allenpike.com/feed.json");
         List<News> list = null;
         try {
             list = task.get();
@@ -49,63 +47,66 @@ public class MainActivity extends AppCompatActivity {
         } catch (ExecutionException e) {
             e.printStackTrace();
         }
-        setContentView(R.layout.list_view);
         ListView listView = (ListView) findViewById(R.id.list_view);
         NewsAdapter newsAdapter =new NewsAdapter(this,list);
         listView.setAdapter(newsAdapter);
     }
 
-    class Task extends AsyncTask<Void,Integer,List<News>>{
+    private class Task extends AsyncTask<String,Integer,List<News>>{
 
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            System.out.println(values[0]);
-            progressBar.setProgress(values[0]);
-        }
-
-        private List<News> makeHttpRequest() throws IOException, JSONException {
-            URL url = new URL("http://www.allenpike.com/feed.json");
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        private InputStream makeHttpRequest(String url) throws IOException {
+            URL tempUrl = new URL(url);
+            HttpURLConnection urlConnection = (HttpURLConnection) tempUrl.openConnection();
             urlConnection.setReadTimeout(10000);
             urlConnection.setConnectTimeout(15000);
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
+            return urlConnection.getInputStream();
+        }
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
+        private String readAllLine(InputStream stream) throws IOException {
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream,"UTF-8"));
             StringBuilder sb = new StringBuilder();
             String line=null;
             while ((line=br.readLine()) != null){
                 sb.append(line);
             }
+            return sb.toString();
+        }
 
-            JSONObject jsonObject = new JSONObject(sb.toString());
+        private List<News> parseJson(String json,List<News> list) throws JSONException, IOException {
+            JSONObject jsonObject = new JSONObject(json);
             JSONArray jsonArray = jsonObject.getJSONArray("items");
-
-            List<News> list = new ArrayList<>();
-
             for(int i=0;i<jsonArray.length();i++){
-              JSONObject tmp = jsonArray.getJSONObject(i);
+                JSONObject tmp = jsonArray.getJSONObject(i);
                 News news = new News();
                 news.setId(tmp.getString("id"));
                 news.setContent(tmp.getString("content_html"));
-//                news.setDate(Date.valueOf(tmp.getString("date_published")));
                 news.setTitle(tmp.getString("title"));
                 news.setUrl(tmp.getString("url"));
                 list.add(news);
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             return list;
         }
 
+
         @Override
-        protected List<News> doInBackground(Void... voids) {
-            List<News> result = null;
+        protected List<News> doInBackground(String... strings) {
+            List<News> result = new CopyOnWriteArrayList<>();
             try {
-                result =  makeHttpRequest();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
+                for(int i=0;i<strings.length;i++){
+                    InputStream stream = makeHttpRequest(strings[i]);
+                    String json = readAllLine(stream);
+                    result = parseJson(json,result);
+                }
+            }catch (JSONException e){
+            }catch (IOException e){
             }
             return result;
         }
