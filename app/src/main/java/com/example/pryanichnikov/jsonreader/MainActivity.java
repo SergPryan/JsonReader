@@ -2,10 +2,14 @@ package com.example.pryanichnikov.jsonreader;
 
 
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+import android.view.View;
+import android.view.Window;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,34 +30,31 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
+    private NewsAdapter newsAdapter;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        Task task = new Task();
+        task.execute("http://www.allenpike.com/feed.json");
+//        List<News> list = null;
+//        try {
+//            list = task.get();
+//        } catch (InterruptedException | ExecutionException e) {
+//            e.printStackTrace();
+//        }
+
+
+
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_main);
-
-        try {
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-
         setContentView(R.layout.list_view);
-
-        Task task = new Task();
-        task.execute("http://www.allenpike.com/feed.json");
-        List<News> list = null;
-        try {
-            list = task.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        ListView listView = (ListView) findViewById(R.id.list_view);
-        NewsAdapter newsAdapter =new NewsAdapter(this,list);
-        listView.setAdapter(newsAdapter);
     }
 
     private class Task extends AsyncTask<String,Integer,List<News>>{
@@ -104,11 +105,35 @@ public class MainActivity extends AppCompatActivity {
                     String json = readAllLine(stream);
                     result = parseJson(json,result);
                 }
-            }catch (JSONException e){
-            }catch (IOException e){
+            }catch (JSONException | IOException e){
+                e.printStackTrace();
+            }
+
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
             return result;
         }
+
+        @Override
+        protected void onPreExecute() {
+            ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected void onPostExecute(List<News> newses) {
+            ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            progressBar.setVisibility(View.GONE);
+            ListView listView = (ListView) findViewById(R.id.list_view);
+            newsAdapter =new NewsAdapter(getApplicationContext(),newses);
+            listView.setAdapter(newsAdapter);
+
+        }
+
+
     }
 
 
