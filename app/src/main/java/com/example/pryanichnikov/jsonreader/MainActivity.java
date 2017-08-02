@@ -5,22 +5,16 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
-import android.view.View;
 import android.widget.ListView;
-import android.widget.ProgressBar;
-
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 
 import java.net.URL;
@@ -35,6 +29,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setContentView(R.layout.activity_main);
+
+        try {
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
         setContentView(R.layout.list_view);
 
         Task task = new Task();
@@ -85,11 +89,6 @@ public class MainActivity extends AppCompatActivity {
                 news.setTitle(tmp.getString("title"));
                 news.setUrl(tmp.getString("url"));
                 list.add(news);
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
 
             return list;
