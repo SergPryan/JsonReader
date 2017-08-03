@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -27,7 +28,6 @@ import java.net.URL;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                TimeUnit.SECONDS.sleep(3);
+                TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -115,6 +115,15 @@ public class MainActivity extends AppCompatActivity {
             ListView listView = (ListView) findViewById(R.id.list_view);
             newsAdapter =new NewsAdapter(getApplicationContext(),newses);
             listView.setAdapter(newsAdapter);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Intent intent = new Intent(MainActivity.this,NewsActivity.class);
+                    News news = (News) adapterView.getItemAtPosition(i);
+                    intent.putExtra("news_content",news.getContent());
+                    startActivity(intent);
+                }
+            });
         }
 
 
