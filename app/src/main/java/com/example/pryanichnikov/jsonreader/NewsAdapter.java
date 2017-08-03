@@ -1,6 +1,7 @@
 package com.example.pryanichnikov.jsonreader;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.Html;
@@ -29,12 +30,12 @@ public class NewsAdapter extends ArrayAdapter<News> {
         }
         News news = getItem(position);
 
-        TextView date = result.findViewById(R.id.news_date);
-        date.setText((CharSequence) news.getDate());
+//        TextView date = result.findViewById(R.id.news_date);
+//        date.setText((CharSequence) news.getDate());
         TextView title = result.findViewById(R.id.news_title);
         title.setText( news.getTitle());
-        TextView content = result.findViewById(R.id.news_content);
-        content.setText(Html.fromHtml(news.getContent(),Html.FROM_HTML_MODE_COMPACT));
+//        TextView content = result.findViewById(R.id.news_content);
+//        content.setText(Html.fromHtml(news.getContent(),Html.FROM_HTML_MODE_COMPACT));
 
         return result;
     }

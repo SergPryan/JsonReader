@@ -1,6 +1,7 @@
 package com.example.pryanichnikov.jsonreader;
 
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,28 +35,11 @@ public class MainActivity extends AppCompatActivity {
     private NewsAdapter newsAdapter;
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        ProgressBar progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        Task task = new Task();
-        task.execute("http://www.allenpike.com/feed.json");
-//        List<News> list = null;
-//        try {
-//            list = task.get();
-//        } catch (InterruptedException | ExecutionException e) {
-//            e.printStackTrace();
-//        }
-
-
-
-    }
-
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_view);
+        Task task = new Task();
+        task.execute("http://www.allenpike.com/feed.json");
     }
 
     private class Task extends AsyncTask<String,Integer,List<News>>{
@@ -110,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             try {
-                TimeUnit.SECONDS.sleep(5);
+                TimeUnit.SECONDS.sleep(3);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -130,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
             ListView listView = (ListView) findViewById(R.id.list_view);
             newsAdapter =new NewsAdapter(getApplicationContext(),newses);
             listView.setAdapter(newsAdapter);
-
         }
 
 
